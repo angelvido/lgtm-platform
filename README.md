@@ -90,6 +90,40 @@ Alternative Collector topologies and more advanced infrastructure telemetry will
 
 Technologies listed here describe the intended direction. Their presence in this table does not imply that they have already been integrated.
 
+## Local Requirements
+
+The current cluster lifecycle requires:
+
+- Docker with a running daemon.
+- kind.
+- kubectl.
+- GNU Make.
+- Bash.
+
+WSL2 is the primary development environment. The lifecycle scripts are also designed to work on Linux and macOS when the same tools are available.
+
+## Getting Started
+
+Create the local three-node Kubernetes cluster:
+
+```bash
+make cluster
+```
+
+Inspect its control plane, nodes, and system pods:
+
+```bash
+make status
+```
+
+Delete the cluster explicitly when it is no longer required:
+
+```bash
+make destroy
+```
+
+The default cluster name is `lgtm-platform`, and lifecycle commands use `~/.kube/config`. Override either value for an individual command with `CLUSTER_NAME=<name>` or `KUBECONFIG_FILE=<path>`.
+
 ## Repository Structure
 
 ```text
@@ -123,8 +157,8 @@ Each area currently contains a short description of its intended responsibility.
 
 The current high-level roadmap is:
 
-1. Define the repository scope, structure, and contribution conventions.
-2. Add a minimal and reproducible kind cluster configuration.
+1. Define the repository scope, structure, and contribution conventions. ✅
+2. Add a minimal and reproducible kind cluster configuration. 🚧
 3. Introduce Helm chart foundations and pin upstream dependencies.
 4. Deploy a resource-conscious baseline observability stack.
 5. Add a small distributed demo platform with PostgreSQL and Redis.
@@ -136,7 +170,7 @@ The roadmap is directional and may evolve through documented architectural decis
 
 ## Current Status
 
-**Repository foundation.** The project scope and directory responsibilities are being established. There is no deployable cluster, observability stack, or demo application yet.
+**Local cluster foundation.** A declarative three-node kind cluster and explicit lifecycle commands are available. The observability stack and demo applications have not been implemented yet.
 
 ## Contributing
 
