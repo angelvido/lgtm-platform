@@ -104,6 +104,12 @@ WSL2 is the primary development environment. The lifecycle scripts are also desi
 
 ## Getting Started
 
+List the currently available commands:
+
+```bash
+make help
+```
+
 Create the local three-node Kubernetes cluster:
 
 ```bash
@@ -128,6 +134,7 @@ The default cluster name is `lgtm-platform`, and lifecycle commands use `~/.kube
 
 ```text
 .
+├── Makefile              # Public interface for common operations
 ├── apps/                 # Experimental applications and services
 ├── charts/               # Project-owned Helm charts
 ├── cluster/              # Local Kubernetes cluster configuration
@@ -137,7 +144,8 @@ The default cluster name is `lgtm-platform`, and lifecycle commands use `~/.kube
 │   └── experiments/      # Experimental methodology and documentation
 ├── experiments/          # Executable experiment definitions
 ├── observability/        # Project-owned observability configuration
-└── results/              # Raw and processed experimental outputs
+├── results/              # Evidence produced by experiment runs
+└── scripts/              # Local lifecycle and automation scripts
 ```
 
 Each area currently contains a short description of its intended responsibility. Directories will gain implementation files only when their corresponding functionality is introduced.
