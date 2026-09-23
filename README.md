@@ -166,7 +166,7 @@ Each area currently contains a short description of its intended responsibility.
 The current high-level roadmap is:
 
 1. Define the repository scope, structure, and contribution conventions. ✅
-2. Add a minimal and reproducible kind cluster configuration. 🚧
+2. Add a minimal and reproducible kind cluster configuration. ✅
 3. Introduce Helm chart foundations and pin upstream dependencies.
 4. Deploy a resource-conscious baseline observability stack.
 5. Add a small distributed demo platform with PostgreSQL and Redis.
