@@ -101,6 +101,7 @@ Repository validation additionally requires:
 
 - ShellCheck.
 - yamllint.
+- Helm 4.
 
 The current cluster lifecycle additionally requires:
 

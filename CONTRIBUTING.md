@@ -33,10 +33,11 @@ Before submitting a pull request, run:
 make lint
 ```
 
-This command runs the same repository, shell, and YAML validation used by GitHub Actions. The current validation dependencies are:
+This command runs the same repository, shell, YAML, and Helm validation used by GitHub Actions. The current validation dependencies are:
 
 - ShellCheck.
 - yamllint.
+- Helm 4.
 
 Validation tooling reports missing dependencies but does not install them automatically.
 

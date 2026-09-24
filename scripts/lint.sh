@@ -9,6 +9,7 @@ readonly PROJECT_ROOT
 
 shellcheck_available=true
 yamllint_available=true
+helm_available=true
 failed_domains=0
 
 log() {
@@ -33,6 +34,11 @@ check_dependencies() {
   if ! command -v yamllint >/dev/null 2>&1; then
     yamllint_available=false
     log_domain 'yaml' 'Required command yamllint is not available in PATH.'
+  fi
+
+  if ! command -v helm >/dev/null 2>&1; then
+    helm_available=false
+    log_domain 'helm' 'Required command helm is not available in PATH.'
   fi
 }
 
@@ -92,6 +98,49 @@ lint_yaml() {
   yamllint .
 }
 
+lint_helm() {
+  local chart_directories=()
+  local chart_directory
+  local chart_file
+  local release_name
+  local status=0
+
+  if [[ "${helm_available}" == false ]]; then
+    return 1
+  fi
+
+  while IFS= read -r chart_file; do
+    chart_directories[${#chart_directories[@]}]="$(dirname "${chart_file}")"
+  done < <(find charts -mindepth 2 -maxdepth 2 -type f -name Chart.yaml | sort)
+
+  if [[ ${#chart_directories[@]} -eq 0 ]]; then
+    log_domain 'helm' 'No Helm charts found.'
+    return 0
+  fi
+
+  for chart_directory in "${chart_directories[@]}"; do
+    release_name="$(basename "${chart_directory}")"
+
+    log_domain 'helm' "Building dependencies for ${chart_directory}..."
+    if ! helm dependency build "${chart_directory}"; then
+      status=1
+      continue
+    fi
+
+    log_domain 'helm' "Linting ${chart_directory}..."
+    if ! helm lint "${chart_directory}"; then
+      status=1
+    fi
+
+    log_domain 'helm' "Rendering ${chart_directory}..."
+    if ! helm template "${release_name}" "${chart_directory}" --namespace "${release_name}" >/dev/null; then
+      status=1
+    fi
+  done
+
+  return "${status}"
+}
+
 run_domain() {
   local domain="$1"
   local check_function="$2"
@@ -114,6 +163,7 @@ main() {
   run_domain 'repository' lint_repository
   run_domain 'shell' lint_shell
   run_domain 'yaml' lint_yaml
+  run_domain 'helm' lint_helm
 
   if [[ "${failed_domains}" -gt 0 ]]; then
     printf '[lint] Validation failed in %d domain(s).\n' "${failed_domains}" >&2
