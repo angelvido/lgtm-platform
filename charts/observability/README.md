@@ -38,7 +38,15 @@ The chart declares pinned upstream dependencies for:
 
 ## Current State
 
-The dependency foundation is present, but components remain disabled until their project-owned configuration is introduced and validated. This avoids rendering upstream defaults that do not represent the intended local architecture.
+The OpenTelemetry pipeline foundation is configured:
+
+- Agent Collectors run as a DaemonSet and receive OTLP gRPC and HTTP traffic.
+- Agent traffic is routed to a stable `otel-gateway` service.
+- The Gateway runs as a single Deployment and receives all three telemetry signals.
+- Kubernetes resource attributes are added by the Agent preset.
+- Memory limiting, batching, retry, and sending queues protect the initial pipeline.
+
+The Gateway currently uses the `debug` exporter until Prometheus, Loki, and Tempo are configured in the next integration step.
 
 ## Design Constraints
 
