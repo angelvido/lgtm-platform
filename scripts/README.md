@@ -6,12 +6,32 @@ The Make targets are the preferred public interface:
 
 ```bash
 make help
+make lint
 make cluster
 make status
 make destroy
 ```
 
 The scripts remain directly executable for troubleshooting and automation that does not use Make.
+
+## Repository Validation
+
+### `lint.sh`
+
+Runs all repository validation domains and reports their results together:
+
+- Repository conventions, including executable script permissions.
+- Bash syntax and ShellCheck.
+- YAML style and syntax through yamllint.
+
+The script is the shared implementation behind local validation and GitHub Actions. New technology-specific validation should be added as an explicit domain while `make lint` remains the stable public interface.
+
+The current validation dependencies are:
+
+- ShellCheck.
+- yamllint.
+
+The script reports missing tools but never installs them automatically.
 
 ## Cluster Lifecycle
 
