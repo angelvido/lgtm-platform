@@ -92,13 +92,21 @@ Technologies listed here describe the intended direction. Their presence in this
 
 ## Local Requirements
 
-The current cluster lifecycle requires:
+The repository command interface requires:
+
+- GNU Make.
+- Bash.
+
+Repository validation additionally requires:
+
+- ShellCheck.
+- yamllint.
+
+The current cluster lifecycle additionally requires:
 
 - Docker with a running daemon.
 - kind.
 - kubectl.
-- GNU Make.
-- Bash.
 
 WSL2 is the primary development environment. The lifecycle scripts are also designed to work on Linux and macOS when the same tools are available.
 
@@ -108,6 +116,12 @@ List the currently available commands:
 
 ```bash
 make help
+```
+
+Run all repository validation checks:
+
+```bash
+make lint
 ```
 
 Create the local three-node Kubernetes cluster:
@@ -134,6 +148,8 @@ The default cluster name is `lgtm-platform`, and lifecycle commands use `~/.kube
 
 ```text
 .
+├── .github/              # GitHub Actions workflows
+├── .yamllint.yml         # YAML validation rules
 ├── Makefile              # Public interface for common operations
 ├── apps/                 # Experimental applications and services
 ├── charts/               # Project-owned Helm charts
