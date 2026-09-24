@@ -49,8 +49,9 @@ The OpenTelemetry pipeline and telemetry backends are configured:
 - Loki runs in monolithic mode and accepts logs through its native OTLP HTTP endpoint.
 - Tempo runs in monolithic mode and accepts traces through OTLP gRPC.
 - Prometheus, Loki, and Tempo use ephemeral storage with conservative local resources.
+- Grafana provisions Prometheus, Loki, and Tempo datasources with stable UIDs.
 
-Grafana remains disabled until stable datasources are provisioned in the next integration step.
+Dashboards, alerts, and cross-signal correlations remain outside the current integration scope.
 
 ## Design Constraints
 
