@@ -1,14 +1,151 @@
 prometheus:
-  enabled: false
+  enabled: true
+  fullnameOverride: prometheus-stack
+  defaultRules:
+    create: false
+  alertmanager:
+    enabled: false
+  grafana:
+    enabled: false
+  kubernetesServiceMonitors:
+    enabled: false
+  kubeApiServer:
+    enabled: false
+  kubelet:
+    enabled: false
+  kubeControllerManager:
+    enabled: false
+  coreDns:
+    enabled: false
+  kubeDns:
+    enabled: false
+  kubeEtcd:
+    enabled: false
+  kubeScheduler:
+    enabled: false
+  kubeProxy:
+    enabled: false
+  kubeStateMetrics:
+    enabled: false
+  nodeExporter:
+    enabled: false
+  prometheusOperator:
+    serviceMonitor:
+      selfMonitor: false
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+  prometheus:
+    serviceMonitor:
+      selfMonitor: false
+    prometheusSpec:
+      enableOTLPReceiver: true
+      retention: 6h
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+        limits:
+          cpu: 500m
+          memory: 1Gi
+      storageSpec:
+        emptyDir: {}
 
 grafana:
   enabled: false
 
 loki:
-  enabled: false
+  enabled: true
+  fullnameOverride: loki
+  deploymentMode: Monolithic
+  loki:
+    auth_enabled: false
+    commonConfig:
+      replication_factor: 1
+    storage:
+      type: filesystem
+    schemaConfig:
+      configs:
+        - from: "2024-04-01"
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: loki_index_
+            period: 24h
+  singleBinary:
+    replicas: 1
+    persistence:
+      enabled: false
+    podDisruptionBudget:
+      enabled: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 768Mi
+  gateway:
+    enabled: false
+  test:
+    enabled: false
+  lokiCanary:
+    enabled: false
+  chunksCache:
+    enabled: false
+  resultsCache:
+    enabled: false
+  backend:
+    replicas: 0
+  read:
+    replicas: 0
+  write:
+    replicas: 0
+  ingester:
+    replicas: 0
+  querier:
+    replicas: 0
+  queryFrontend:
+    replicas: 0
+  queryScheduler:
+    replicas: 0
+  distributor:
+    replicas: 0
+  compactor:
+    replicas: 0
+  indexGateway:
+    replicas: 0
+  bloomGateway:
+    replicas: 0
 
 tempo:
-  enabled: false
+  enabled: true
+  fullnameOverride: tempo
+  replicas: 1
+  tempo:
+    reportingEnabled: false
+    retention: 24h
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 768Mi
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+  persistence:
+    enabled: false
 
 otel-agent:
   enabled: true
@@ -123,7 +260,26 @@ otel-gateway:
         limit_percentage: 80
         spike_limit_percentage: 25
     exporters:
-      debug: {}
+      otlp/tempo:
+        endpoint: tempo:4317
+        tls:
+          insecure: true
+        retry_on_failure:
+          enabled: true
+        sending_queue:
+          enabled: true
+      otlphttp/loki:
+        endpoint: http://loki:3100/otlp
+        retry_on_failure:
+          enabled: true
+        sending_queue:
+          enabled: true
+      otlphttp/prometheus:
+        endpoint: http://prometheus-stack-prometheus:9090/api/v1/otlp
+        retry_on_failure:
+          enabled: true
+        sending_queue:
+          enabled: true
     service:
       extensions:
         - health_check
@@ -135,7 +291,7 @@ otel-gateway:
             - memory_limiter
             - batch
           exporters:
-            - debug
+            - otlphttp/loki
         metrics:
           receivers:
             - otlp
@@ -143,7 +299,7 @@ otel-gateway:
             - memory_limiter
             - batch
           exporters:
-            - debug
+            - otlphttp/prometheus
         traces:
           receivers:
             - otlp
@@ -151,7 +307,7 @@ otel-gateway:
             - memory_limiter
             - batch
           exporters:
-            - debug
+            - otlp/tempo
   ports:
     jaeger-compact:
       enabled: false

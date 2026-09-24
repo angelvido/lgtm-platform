@@ -38,15 +38,19 @@ The chart declares pinned upstream dependencies for:
 
 ## Current State
 
-The OpenTelemetry pipeline foundation is configured:
+The OpenTelemetry pipeline and telemetry backends are configured:
 
 - Agent Collectors run as a DaemonSet and receive OTLP gRPC and HTTP traffic.
 - Agent traffic is routed to a stable `otel-gateway` service.
 - The Gateway runs as a single Deployment and receives all three telemetry signals.
 - Kubernetes resource attributes are added by the Agent preset.
 - Memory limiting, batching, retry, and sending queues protect the initial pipeline.
+- Prometheus accepts metrics through its native OTLP HTTP receiver.
+- Loki runs in monolithic mode and accepts logs through its native OTLP HTTP endpoint.
+- Tempo runs in monolithic mode and accepts traces through OTLP gRPC.
+- Prometheus, Loki, and Tempo use ephemeral storage with conservative local resources.
 
-The Gateway currently uses the `debug` exporter until Prometheus, Loki, and Tempo are configured in the next integration step.
+Grafana remains disabled until stable datasources are provisioned in the next integration step.
 
 ## Design Constraints
 
