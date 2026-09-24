@@ -143,6 +143,38 @@ Delete the cluster explicitly when it is no longer required:
 make destroy
 ```
 
+Install or upgrade the observability platform:
+
+```bash
+make observability
+```
+
+Inspect the Helm release, pods, and services:
+
+```bash
+make observability-status
+```
+
+Forward Grafana to `http://localhost:3000`:
+
+```bash
+make port-forward
+```
+
+Retrieve the generated Grafana administrator password:
+
+```bash
+kubectl get secret grafana \
+  --namespace observability \
+  --output jsonpath='{.data.admin-password}' | base64 --decode
+```
+
+Uninstall the observability platform without deleting the cluster:
+
+```bash
+make destroy-observability
+```
+
 The default cluster name is `lgtm-platform`, and lifecycle commands use `~/.kube/config`. Override either value for an individual command with `CLUSTER_NAME=<name>` or `KUBECONFIG_FILE=<path>`.
 
 ## Repository Structure

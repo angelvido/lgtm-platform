@@ -71,3 +71,26 @@ helm dependency build charts/observability
 helm lint charts/observability
 helm template observability charts/observability --namespace observability
 ```
+
+## Deployment
+
+Use the repository command interface to create or update the release:
+
+```bash
+make observability
+make observability-status
+```
+
+Access Grafana locally:
+
+```bash
+make port-forward
+```
+
+The default Grafana user is `admin`. Retrieve the generated password from the `grafana` Secret as documented in the root README.
+
+Remove the release and its dedicated namespace with:
+
+```bash
+make destroy-observability
+```

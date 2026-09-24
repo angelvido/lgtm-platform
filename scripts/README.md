@@ -9,6 +9,10 @@ make help
 make lint
 make cluster
 make status
+make observability
+make observability-status
+make port-forward
+make destroy-observability
 make destroy
 ```
 
@@ -37,6 +41,24 @@ The script reports missing tools but never installs them automatically.
 
 Helm validation configures the chart repositories required by the project inside the ignored `.helm/lint/` directory. It does not modify the user's global Helm repository configuration.
 
+## Observability Lifecycle
+
+### `deploy-observability.sh`
+
+Configures isolated Helm repository state under `.helm/runtime/`, builds chart dependencies, and installs or upgrades the observability release. The command creates the namespace and waits for workloads to become ready.
+
+### `observability-status.sh`
+
+Displays the Helm release status together with pods and services in the observability namespace.
+
+### `port-forward-grafana.sh`
+
+Forwards the Grafana service to `http://localhost:3000` by default. The process remains attached until interrupted.
+
+### `destroy-observability.sh`
+
+Uninstalls the observability release and deletes its dedicated namespace. Repeated execution is safe.
+
 ## Cluster Lifecycle
 
 ### `create-cluster.sh`
@@ -60,6 +82,10 @@ The scripts accept configuration through environment variables. The Makefile exp
 | `CLUSTER_NAME` | `lgtm-platform` | Name used by kind and the generated kubectl context. |
 | `KUBECONFIG_FILE` | `$HOME/.kube/config` | Kubeconfig file updated by kind and used by kubectl. |
 | `CLUSTER_WAIT_TIMEOUT` | `120s` | Maximum readiness wait during cluster creation. |
+| `OBSERVABILITY_NAMESPACE` | `observability` | Namespace used by the observability release. |
+| `OBSERVABILITY_RELEASE` | `observability` | Helm release name for the platform. |
+| `HELM_TIMEOUT` | `10m` | Maximum Helm wait time during deployment. |
+| `GRAFANA_LOCAL_PORT` | `3000` | Local port used by Grafana port forwarding. |
 
 Example:
 
