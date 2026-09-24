@@ -1,0 +1,17 @@
+prometheus:
+  enabled: false
+
+grafana:
+  enabled: false
+
+loki:
+  enabled: false
+
+tempo:
+  enabled: false
+
+otel-agent:
+  enabled: false
+
+otel-gateway:
+  enabled: false
