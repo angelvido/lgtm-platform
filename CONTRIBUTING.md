@@ -17,15 +17,28 @@ English is the primary language for source code, configuration, documentation, i
 
 ## Development Workflow
 
-Until project-specific automation is introduced:
-
 1. Open an issue or discussion for substantial architectural changes.
 2. Create a focused branch from the default branch.
 3. Make the smallest change that satisfies the agreed scope.
-4. Run all validations documented by the affected component.
+4. Run the repository validation suite and any additional checks documented by the affected component.
 5. Submit a pull request explaining the motivation, approach, validation, and trade-offs.
 
-More detailed build, test, and lint instructions will be added as executable components are introduced.
+Additional build and test instructions will be added as executable components are introduced.
+
+## Validation
+
+Before submitting a pull request, run:
+
+```bash
+make lint
+```
+
+This command runs the same repository, shell, and YAML validation used by GitHub Actions. The current validation dependencies are:
+
+- ShellCheck.
+- yamllint.
+
+Validation tooling reports missing dependencies but does not install them automatically.
 
 ## Architecture Decisions
 
