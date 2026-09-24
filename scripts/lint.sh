@@ -102,6 +102,9 @@ lint_helm() {
   local chart_directories=()
   local chart_directory
   local chart_file
+  local helm_cache_home="${PROJECT_ROOT}/.helm/lint/cache"
+  local helm_config_home="${PROJECT_ROOT}/.helm/lint/config"
+  local helm_data_home="${PROJECT_ROOT}/.helm/lint/data"
   local release_name
   local status=0
 
@@ -118,22 +121,41 @@ lint_helm() {
     return 0
   fi
 
+  mkdir -p "${helm_cache_home}" "${helm_config_home}" "${helm_data_home}"
+
+  log_domain 'helm' 'Configuring isolated chart repositories...'
+  if ! HELM_CACHE_HOME="${helm_cache_home}" HELM_CONFIG_HOME="${helm_config_home}" HELM_DATA_HOME="${helm_data_home}" \
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts --force-update; then
+    return 1
+  fi
+  if ! HELM_CACHE_HOME="${helm_cache_home}" HELM_CONFIG_HOME="${helm_config_home}" HELM_DATA_HOME="${helm_data_home}" \
+    helm repo add grafana-community https://grafana-community.github.io/helm-charts --force-update; then
+    return 1
+  fi
+  if ! HELM_CACHE_HOME="${helm_cache_home}" HELM_CONFIG_HOME="${helm_config_home}" HELM_DATA_HOME="${helm_data_home}" \
+    helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts --force-update; then
+    return 1
+  fi
+
   for chart_directory in "${chart_directories[@]}"; do
     release_name="$(basename "${chart_directory}")"
 
     log_domain 'helm' "Building dependencies for ${chart_directory}..."
-    if ! helm dependency build "${chart_directory}"; then
+    if ! HELM_CACHE_HOME="${helm_cache_home}" HELM_CONFIG_HOME="${helm_config_home}" HELM_DATA_HOME="${helm_data_home}" \
+      helm dependency build "${chart_directory}"; then
       status=1
       continue
     fi
 
     log_domain 'helm' "Linting ${chart_directory}..."
-    if ! helm lint "${chart_directory}"; then
+    if ! HELM_CACHE_HOME="${helm_cache_home}" HELM_CONFIG_HOME="${helm_config_home}" HELM_DATA_HOME="${helm_data_home}" \
+      helm lint "${chart_directory}"; then
       status=1
     fi
 
     log_domain 'helm' "Rendering ${chart_directory}..."
-    if ! helm template "${release_name}" "${chart_directory}" --namespace "${release_name}" >/dev/null; then
+    if ! HELM_CACHE_HOME="${helm_cache_home}" HELM_CONFIG_HOME="${helm_config_home}" HELM_DATA_HOME="${helm_data_home}" \
+      helm template "${release_name}" "${chart_directory}" --namespace "${release_name}" >/dev/null; then
       status=1
     fi
   done

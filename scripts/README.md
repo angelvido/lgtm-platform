@@ -35,6 +35,8 @@ The current validation dependencies are:
 
 The script reports missing tools but never installs them automatically.
 
+Helm validation configures the chart repositories required by the project inside the ignored `.helm/lint/` directory. It does not modify the user's global Helm repository configuration.
+
 ## Cluster Lifecycle
 
 ### `create-cluster.sh`
