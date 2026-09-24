@@ -14,6 +14,9 @@ PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 readonly PROJECT_ROOT
 readonly CHART_DIRECTORY="${PROJECT_ROOT}/charts/observability"
 readonly HELM_STATE_DIRECTORY="${PROJECT_ROOT}/.helm/runtime"
+readonly GRAFANA_ADMIN_USER="${GRAFANA_ADMIN_USER:-admin}"
+readonly GRAFANA_ADMIN_PASSWORD_FILE="${GRAFANA_ADMIN_PASSWORD_FILE:-${PROJECT_ROOT}/.secrets/grafana-admin-password}"
+readonly GRAFANA_ADMIN_SECRET_NAME="grafana-admin-credentials"
 export KUBECONFIG="${KUBECONFIG_FILE}"
 export HELM_CACHE_HOME="${HELM_STATE_DIRECTORY}/cache"
 export HELM_CONFIG_HOME="${HELM_STATE_DIRECTORY}/config"
@@ -36,6 +39,22 @@ configure_helm_repositories() {
   helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts --force-update
 }
 
+create_grafana_admin_secret() {
+  if [[ ! -s "${GRAFANA_ADMIN_PASSWORD_FILE}" ]]; then
+    printf 'Error: Grafana password file not found or empty at %s.\n' "${GRAFANA_ADMIN_PASSWORD_FILE}" >&2
+    printf 'Create it as documented in .secrets.example/README.md and try again.\n' >&2
+    exit 1
+  fi
+
+  kubectl create secret generic "${GRAFANA_ADMIN_SECRET_NAME}" \
+    --context "${KUBE_CONTEXT}" \
+    --namespace "${OBSERVABILITY_NAMESPACE}" \
+    --from-literal=admin-user="${GRAFANA_ADMIN_USER}" \
+    --from-file=admin-password="${GRAFANA_ADMIN_PASSWORD_FILE}" \
+    --dry-run=client \
+    --output yaml | kubectl apply --context "${KUBE_CONTEXT}" --filename -
+}
+
 require_command helm
 require_command kubectl
 
@@ -49,6 +68,16 @@ if [[ ! -f "${CHART_DIRECTORY}/Chart.yaml" ]]; then
   exit 1
 fi
 
+printf 'Ensuring namespace %s exists...\n' "${OBSERVABILITY_NAMESPACE}"
+if kubectl get namespace "${OBSERVABILITY_NAMESPACE}" --context "${KUBE_CONTEXT}" >/dev/null 2>&1; then
+  printf 'Namespace %s already exists.\n' "${OBSERVABILITY_NAMESPACE}"
+else
+  kubectl create namespace "${OBSERVABILITY_NAMESPACE}" --context "${KUBE_CONTEXT}"
+fi
+
+printf 'Creating or updating Grafana administrator credentials...\n'
+create_grafana_admin_secret
+
 printf 'Configuring Helm repositories...\n'
 configure_helm_repositories
 
@@ -59,7 +88,6 @@ printf 'Installing observability release %s in namespace %s...\n' "${OBSERVABILI
 helm upgrade --install "${OBSERVABILITY_RELEASE}" "${CHART_DIRECTORY}" \
   --kube-context "${KUBE_CONTEXT}" \
   --namespace "${OBSERVABILITY_NAMESPACE}" \
-  --create-namespace \
   --wait \
   --timeout "${HELM_TIMEOUT}"
 

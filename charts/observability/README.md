@@ -87,7 +87,8 @@ Access Grafana locally:
 make port-forward
 ```
 
-The default Grafana user is `admin`. Retrieve the generated password from the `grafana` Secret as documented in the root README.
+The default Grafana user is `admin`. Retrieve the configured password from the `grafana-admin-credentials` Secret as documented in the root README.
+Grafana credentials are provided through the existing `grafana-admin-credentials` Kubernetes Secret. The chart does not render or own credential values.
 
 Remove the release and its dedicated namespace with:
 

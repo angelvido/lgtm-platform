@@ -5,6 +5,7 @@ OBSERVABILITY_NAMESPACE ?= observability
 OBSERVABILITY_RELEASE ?= observability
 HELM_TIMEOUT ?= 10m
 GRAFANA_LOCAL_PORT ?= 3000
+GRAFANA_ADMIN_PASSWORD_FILE ?= $(CURDIR)/.secrets/grafana-admin-password
 
 .DEFAULT_GOAL := help
 
@@ -32,7 +33,8 @@ help:
 		'  OBSERVABILITY_NAMESPACE  Platform namespace (default: observability)' \
 		'  OBSERVABILITY_RELEASE    Helm release name (default: observability)' \
 		'  HELM_TIMEOUT             Helm readiness timeout (default: 10m)' \
-		'  GRAFANA_LOCAL_PORT       Local Grafana port (default: 3000)'
+		'  GRAFANA_LOCAL_PORT       Local Grafana port (default: 3000)' \
+		'  GRAFANA_ADMIN_PASSWORD_FILE  Local Grafana password file'
 
 lint:
 	./scripts/lint.sh
@@ -47,7 +49,7 @@ destroy:
 	CLUSTER_NAME="$(CLUSTER_NAME)" KUBECONFIG_FILE="$(KUBECONFIG_FILE)" ./scripts/destroy-cluster.sh
 
 observability:
-	CLUSTER_NAME="$(CLUSTER_NAME)" KUBECONFIG_FILE="$(KUBECONFIG_FILE)" OBSERVABILITY_NAMESPACE="$(OBSERVABILITY_NAMESPACE)" OBSERVABILITY_RELEASE="$(OBSERVABILITY_RELEASE)" HELM_TIMEOUT="$(HELM_TIMEOUT)" ./scripts/deploy-observability.sh
+	CLUSTER_NAME="$(CLUSTER_NAME)" KUBECONFIG_FILE="$(KUBECONFIG_FILE)" OBSERVABILITY_NAMESPACE="$(OBSERVABILITY_NAMESPACE)" OBSERVABILITY_RELEASE="$(OBSERVABILITY_RELEASE)" HELM_TIMEOUT="$(HELM_TIMEOUT)" GRAFANA_ADMIN_PASSWORD_FILE="$(GRAFANA_ADMIN_PASSWORD_FILE)" ./scripts/deploy-observability.sh
 
 observability-status:
 	CLUSTER_NAME="$(CLUSTER_NAME)" KUBECONFIG_FILE="$(KUBECONFIG_FILE)" OBSERVABILITY_NAMESPACE="$(OBSERVABILITY_NAMESPACE)" OBSERVABILITY_RELEASE="$(OBSERVABILITY_RELEASE)" ./scripts/observability-status.sh

@@ -45,7 +45,7 @@ Helm validation configures the chart repositories required by the project inside
 
 ### `deploy-observability.sh`
 
-Configures isolated Helm repository state under `.helm/runtime/`, builds chart dependencies, and installs or upgrades the observability release. The command creates the namespace and waits for workloads to become ready.
+Configures isolated Helm repository state under `.helm/runtime/`, creates the namespace and local Grafana administrator Secret, builds chart dependencies, and installs or upgrades the observability release. The command waits for workloads to become ready.
 
 ### `observability-status.sh`
 
@@ -86,6 +86,7 @@ The scripts accept configuration through environment variables. The Makefile exp
 | `OBSERVABILITY_RELEASE` | `observability` | Helm release name for the platform. |
 | `HELM_TIMEOUT` | `10m` | Maximum Helm wait time during deployment. |
 | `GRAFANA_LOCAL_PORT` | `3000` | Local port used by Grafana port forwarding. |
+| `GRAFANA_ADMIN_PASSWORD_FILE` | `.secrets/grafana-admin-password` | Local file used to create the Grafana administrator Secret. |
 
 Example:
 

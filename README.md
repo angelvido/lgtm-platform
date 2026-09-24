@@ -146,8 +146,13 @@ make destroy
 Install or upgrade the observability platform:
 
 ```bash
+mkdir -p .secrets
+printf '%s' 'admin' > .secrets/grafana-admin-password
+chmod 600 .secrets/grafana-admin-password
 make observability
 ```
+
+The example password is intended only for a disposable local laboratory. Secret material under `.secrets/` is ignored by Git, and the chart references a Kubernetes Secret created by the deployment script instead of embedding credentials in Helm values.
 
 Inspect the Helm release, pods, and services:
 
@@ -161,10 +166,10 @@ Forward Grafana to `http://localhost:3000`:
 make port-forward
 ```
 
-Retrieve the generated Grafana administrator password:
+Retrieve the configured Grafana administrator password:
 
 ```bash
-kubectl get secret grafana \
+kubectl get secret grafana-admin-credentials \
   --namespace observability \
   --output jsonpath='{.data.admin-password}' | base64 --decode
 ```
