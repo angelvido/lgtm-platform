@@ -1,0 +1,5 @@
+LGTM Platform observability chart
+
+The chart dependency foundation has been installed in namespace {{ .Release.Namespace }}.
+
+Components are enabled and configured incrementally through the project-owned values file. Review the chart README and current values before treating this release as a complete observability platform.

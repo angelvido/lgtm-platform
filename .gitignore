@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+.secrets/
 
 # Editor and operating system files
 .DS_Store
@@ -18,10 +19,12 @@ tmp/
 # Generated experiment runs
 results/**/runs/
 
-# Helm dependencies and packaged charts
+# Helm dependencies, packages, and local state
 charts/**/charts/
 charts/**/*.tgz
+/*.tgz
+*.prov
+.helm/
 
 # Local Kubernetes configuration
 .kube/
-.

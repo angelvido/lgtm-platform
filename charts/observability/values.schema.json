@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "title": "LGTM Platform observability chart values",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "prometheus": {
+      "$ref": "#/definitions/component"
+    },
+    "grafana": {
+      "$ref": "#/definitions/component"
+    },
+    "loki": {
+      "$ref": "#/definitions/component"
+    },
+    "tempo": {
+      "$ref": "#/definitions/component"
+    },
+    "otel-agent": {
+      "$ref": "#/definitions/component"
+    },
+    "otel-gateway": {
+      "$ref": "#/definitions/component"
+    }
+  },
+  "required": [
+    "prometheus",
+    "grafana",
+    "loki",
+    "tempo",
+    "otel-agent",
+    "otel-gateway"
+  ],
+  "definitions": {
+    "component": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled"
+      ]
+    }
+  }
+}

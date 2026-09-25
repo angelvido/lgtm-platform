@@ -1,0 +1,34 @@
+apiVersion: v2
+name: observability
+description: Lightweight OpenTelemetry-based observability platform for local Kubernetes environments.
+type: application
+version: 0.1.0
+
+dependencies:
+  - name: kube-prometheus-stack
+    alias: prometheus
+    version: 91.5.1
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: prometheus.enabled
+  - name: grafana
+    version: 13.2.5
+    repository: https://grafana-community.github.io/helm-charts
+    condition: grafana.enabled
+  - name: loki
+    version: 18.13.5
+    repository: https://grafana-community.github.io/helm-charts
+    condition: loki.enabled
+  - name: tempo
+    version: 3.0.0
+    repository: https://grafana-community.github.io/helm-charts
+    condition: tempo.enabled
+  - name: opentelemetry-collector
+    alias: otel-agent
+    version: 0.173.1
+    repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+    condition: otel-agent.enabled
+  - name: opentelemetry-collector
+    alias: otel-gateway
+    version: 0.173.1
+    repository: https://open-telemetry.github.io/opentelemetry-helm-charts
+    condition: otel-gateway.enabled

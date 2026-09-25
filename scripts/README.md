@@ -9,6 +9,10 @@ make help
 make lint
 make cluster
 make status
+make observability
+make observability-status
+make port-forward
+make destroy-observability
 make destroy
 ```
 
@@ -23,6 +27,7 @@ Runs all repository validation domains and reports their results together:
 - Repository conventions, including executable script permissions.
 - Bash syntax and ShellCheck.
 - YAML style and syntax through yamllint.
+- Helm dependency resolution, chart linting, and template rendering.
 
 The script is the shared implementation behind local validation and GitHub Actions. New technology-specific validation should be added as an explicit domain while `make lint` remains the stable public interface.
 
@@ -30,8 +35,35 @@ The current validation dependencies are:
 
 - ShellCheck.
 - yamllint.
+- Helm 4.
 
 The script reports missing tools but never installs them automatically.
+
+Helm validation configures the chart repositories required by the project inside the ignored `.helm/lint/` directory. It does not modify the user's global Helm repository configuration.
+
+## Observability Lifecycle
+
+### `deploy-observability.sh`
+
+Configures isolated Helm repository state under `.helm/runtime/`, creates the namespace and local Grafana administrator Secret, builds chart dependencies, and installs or upgrades the observability release. The command waits for workloads to become ready.
+
+### `observability-status.sh`
+
+Displays the Helm release status together with pods and services in the observability namespace.
+
+### `port-forward-grafana.sh`
+
+Forwards the Grafana service to `http://localhost:3000` by default. The process remains attached until interrupted.
+
+### `generate-otel-traffic.sh`
+
+Creates a temporary Kubernetes Job that sends synthetic metrics, logs, and traces to the OpenTelemetry Agent service over OTLP/HTTP. The signals traverse the Agent and Gateway pipeline before reaching their backends. The generator emits normal traffic with a periodic error and latency spike every fifteenth request, allowing all three Grafana datasources to be explored without deploying a demo application.
+
+The command follows Job logs until generation completes and retains the completed Job for troubleshooting. A later run replaces the previous Job.
+
+### `destroy-observability.sh`
+
+Uninstalls the observability release and deletes its dedicated namespace. Repeated execution is safe.
 
 ## Cluster Lifecycle
 
@@ -56,6 +88,15 @@ The scripts accept configuration through environment variables. The Makefile exp
 | `CLUSTER_NAME` | `lgtm-platform` | Name used by kind and the generated kubectl context. |
 | `KUBECONFIG_FILE` | `$HOME/.kube/config` | Kubeconfig file updated by kind and used by kubectl. |
 | `CLUSTER_WAIT_TIMEOUT` | `120s` | Maximum readiness wait during cluster creation. |
+| `OBSERVABILITY_NAMESPACE` | `observability` | Namespace used by the observability release. |
+| `OBSERVABILITY_RELEASE` | `observability` | Helm release name for the platform. |
+| `HELM_TIMEOUT` | `10m` | Maximum Helm wait time during deployment. |
+| `GRAFANA_LOCAL_PORT` | `3000` | Local port used by Grafana port forwarding. |
+| `GRAFANA_ADMIN_PASSWORD_FILE` | `.secrets/grafana-admin-password` | Local file used to create the Grafana administrator Secret. |
+| `OTEL_TRAFFIC_DURATION` | `300` | Synthetic traffic duration in seconds. |
+| `OTEL_TRAFFIC_INTERVAL` | `1` | Seconds between telemetry batches. |
+| `OTEL_TRAFFIC_SERVICE_NAME` | `otel-demo-traffic` | Service name attached to generated telemetry. |
+| `OTEL_TRAFFIC_ENDPOINT` | `http://otel-agent:4318` | In-cluster OTLP/HTTP endpoint used by the generator. |
 
 Example:
 

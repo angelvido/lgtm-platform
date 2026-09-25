@@ -1,5 +1,9 @@
 extends: default
 
+ignore: |
+  .helm/**
+  charts/**/charts/**
+
 rules:
   document-start: disable
   line-length:
