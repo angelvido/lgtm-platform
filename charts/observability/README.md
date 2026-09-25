@@ -87,6 +87,14 @@ Access Grafana locally:
 make port-forward
 ```
 
+Generate a five-minute synthetic OTLP dataset for manual Grafana exploration:
+
+```bash
+make otel-traffic
+```
+
+The generated service name is `otel-demo-traffic`. Start with `{__name__=~"demo_.*"}` in Prometheus, `{service_name="otel-demo-traffic"}` in Loki, and `{ resource.service.name = "otel-demo-traffic" }` in Tempo.
+
 The default Grafana user is `admin`. Retrieve the configured password from the `grafana-admin-credentials` Secret as documented in the root README.
 Grafana credentials are provided through the existing `grafana-admin-credentials` Kubernetes Secret. The chart does not render or own credential values.
 

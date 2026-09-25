@@ -166,6 +166,27 @@ Forward Grafana to `http://localhost:3000`:
 make port-forward
 ```
 
+Generate synthetic OTLP metrics, logs, and traces for five minutes:
+
+```bash
+make otel-traffic
+```
+
+The command runs a temporary Kubernetes Job and streams its progress until completion. Open Grafana Explore in another terminal or browser session while the Job is running. Useful initial queries are:
+
+- Prometheus: `{__name__=~"demo_.*"}`
+- Loki: `{service_name="otel-demo-traffic"}`
+- Tempo TraceQL: `{ resource.service.name = "otel-demo-traffic" }`
+
+Every fifteenth synthetic request produces an HTTP 500 error, an error log, a slower latency sample, and an error trace. Override the duration, interval, or service name when needed:
+
+```bash
+make otel-traffic \
+  OTEL_TRAFFIC_DURATION=600 \
+  OTEL_TRAFFIC_INTERVAL=2 \
+  OTEL_TRAFFIC_SERVICE_NAME=checkout-demo
+```
+
 Retrieve the configured Grafana administrator password:
 
 ```bash
