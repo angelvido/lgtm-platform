@@ -95,7 +95,7 @@ while [ "${sequence}" -le "${iterations}" ]; do
   status_code=200
   severity_number=9
   severity_text=INFO
-  span_status=STATUS_CODE_OK
+  span_status=1
 
   if [ $((sequence % 15)) -eq 0 ]; then
     errors=$((errors + 1))
@@ -103,7 +103,7 @@ while [ "${sequence}" -le "${iterations}" ]; do
     status_code=500
     severity_number=17
     severity_text=ERROR
-    span_status=STATUS_CODE_ERROR
+    span_status=2
   fi
 
   trace_id="${run_id}$(printf '%016x' "${sequence}")"
@@ -114,11 +114,11 @@ while [ "${sequence}" -le "${iterations}" ]; do
   end_ns="$((now_ns + latency_ms * 1000000))"
   resource_attributes="[{\"key\":\"service.name\",\"value\":{\"stringValue\":\"${service_name}\"}},{\"key\":\"service.namespace\",\"value\":{\"stringValue\":\"lgtm-platform\"}},{\"key\":\"service.instance.id\",\"value\":{\"stringValue\":\"${run_id}\"}},{\"key\":\"deployment.environment.name\",\"value\":{\"stringValue\":\"local\"}}]"
 
-  send_payload v1/traces "{\"resourceSpans\":[{\"resource\":{\"attributes\":${resource_attributes}},\"scopeSpans\":[{\"scope\":{\"name\":\"synthetic-traffic-generator\",\"version\":\"1.0.0\"},\"spans\":[{\"traceId\":\"${trace_id}\",\"spanId\":\"${server_span_id}\",\"name\":\"GET /demo/orders/{id}\",\"kind\":\"SPAN_KIND_SERVER\",\"startTimeUnixNano\":\"${now_ns}\",\"endTimeUnixNano\":\"${end_ns}\",\"attributes\":[{\"key\":\"http.request.method\",\"value\":{\"stringValue\":\"GET\"}},{\"key\":\"http.route\",\"value\":{\"stringValue\":\"/demo/orders/{id}\"}},{\"key\":\"http.response.status_code\",\"value\":{\"intValue\":\"${status_code}\"}},{\"key\":\"demo.sequence\",\"value\":{\"intValue\":\"${sequence}\"}}],\"status\":{\"code\":\"${span_status}\"}},{\"traceId\":\"${trace_id}\",\"spanId\":\"${database_span_id}\",\"parentSpanId\":\"${server_span_id}\",\"name\":\"SELECT demo_orders\",\"kind\":\"SPAN_KIND_CLIENT\",\"startTimeUnixNano\":\"${database_start_ns}\",\"endTimeUnixNano\":\"${database_end_ns}\",\"attributes\":[{\"key\":\"db.system.name\",\"value\":{\"stringValue\":\"postgresql\"}},{\"key\":\"db.operation.name\",\"value\":{\"stringValue\":\"SELECT\"}}],\"status\":{\"code\":\"STATUS_CODE_OK\"}}]}]}]}"
+  send_payload v1/traces "{\"resourceSpans\":[{\"resource\":{\"attributes\":${resource_attributes}},\"scopeSpans\":[{\"scope\":{\"name\":\"synthetic-traffic-generator\",\"version\":\"1.0.0\"},\"spans\":[{\"traceId\":\"${trace_id}\",\"spanId\":\"${server_span_id}\",\"name\":\"GET /demo/orders/{id}\",\"kind\":2,\"startTimeUnixNano\":\"${now_ns}\",\"endTimeUnixNano\":\"${end_ns}\",\"attributes\":[{\"key\":\"http.request.method\",\"value\":{\"stringValue\":\"GET\"}},{\"key\":\"http.route\",\"value\":{\"stringValue\":\"/demo/orders/{id}\"}},{\"key\":\"http.response.status_code\",\"value\":{\"intValue\":\"${status_code}\"}},{\"key\":\"demo.sequence\",\"value\":{\"intValue\":\"${sequence}\"}}],\"status\":{\"code\":${span_status}}},{\"traceId\":\"${trace_id}\",\"spanId\":\"${database_span_id}\",\"parentSpanId\":\"${server_span_id}\",\"name\":\"SELECT demo_orders\",\"kind\":3,\"startTimeUnixNano\":\"${database_start_ns}\",\"endTimeUnixNano\":\"${database_end_ns}\",\"attributes\":[{\"key\":\"db.system.name\",\"value\":{\"stringValue\":\"postgresql\"}},{\"key\":\"db.operation.name\",\"value\":{\"stringValue\":\"SELECT\"}}],\"status\":{\"code\":1}}]}]}]}"
 
-  send_payload v1/metrics "{\"resourceMetrics\":[{\"resource\":{\"attributes\":${resource_attributes}},\"scopeMetrics\":[{\"scope\":{\"name\":\"synthetic-traffic-generator\",\"version\":\"1.0.0\"},\"metrics\":[{\"name\":\"demo_requests_total\",\"description\":\"Synthetic requests generated for Grafana validation\",\"sum\":{\"aggregationTemporality\":\"AGGREGATION_TEMPORALITY_CUMULATIVE\",\"isMonotonic\":true,\"dataPoints\":[{\"startTimeUnixNano\":\"${start_ns}\",\"timeUnixNano\":\"${now_ns}\",\"asInt\":\"${sequence}\"}]}},{\"name\":\"demo_errors_total\",\"description\":\"Synthetic request errors\",\"sum\":{\"aggregationTemporality\":\"AGGREGATION_TEMPORALITY_CUMULATIVE\",\"isMonotonic\":true,\"dataPoints\":[{\"startTimeUnixNano\":\"${start_ns}\",\"timeUnixNano\":\"${now_ns}\",\"asInt\":\"${errors}\"}]}},{\"name\":\"demo_request_duration_ms\",\"description\":\"Synthetic request latency in milliseconds\",\"gauge\":{\"dataPoints\":[{\"timeUnixNano\":\"${now_ns}\",\"asDouble\":${latency_ms}.5}]}}]}]}]}"
+  send_payload v1/metrics "{\"resourceMetrics\":[{\"resource\":{\"attributes\":${resource_attributes}},\"scopeMetrics\":[{\"scope\":{\"name\":\"synthetic-traffic-generator\",\"version\":\"1.0.0\"},\"metrics\":[{\"name\":\"demo_requests_total\",\"description\":\"Synthetic requests generated for Grafana validation\",\"sum\":{\"aggregationTemporality\":2,\"isMonotonic\":true,\"dataPoints\":[{\"startTimeUnixNano\":\"${start_ns}\",\"timeUnixNano\":\"${now_ns}\",\"asInt\":\"${sequence}\"}]}},{\"name\":\"demo_errors_total\",\"description\":\"Synthetic request errors\",\"sum\":{\"aggregationTemporality\":2,\"isMonotonic\":true,\"dataPoints\":[{\"startTimeUnixNano\":\"${start_ns}\",\"timeUnixNano\":\"${now_ns}\",\"asInt\":\"${errors}\"}]}},{\"name\":\"demo_request_duration_ms\",\"description\":\"Synthetic request latency in milliseconds\",\"gauge\":{\"dataPoints\":[{\"timeUnixNano\":\"${now_ns}\",\"asDouble\":${latency_ms}.5}]}}]}]}]}"
 
-  send_payload v1/logs "{\"resourceLogs\":[{\"resource\":{\"attributes\":${resource_attributes}},\"scopeLogs\":[{\"scope\":{\"name\":\"synthetic-traffic-generator\",\"version\":\"1.0.0\"},\"logRecords\":[{\"timeUnixNano\":\"${now_ns}\",\"observedTimeUnixNano\":\"${now_ns}\",\"severityNumber\":\"${severity_number}\",\"severityText\":\"${severity_text}\",\"body\":{\"stringValue\":\"Synthetic order request ${sequence} completed with status ${status_code} in ${latency_ms}ms\"},\"attributes\":[{\"key\":\"event.name\",\"value\":{\"stringValue\":\"demo.order.completed\"}},{\"key\":\"http.response.status_code\",\"value\":{\"intValue\":\"${status_code}\"}},{\"key\":\"demo.sequence\",\"value\":{\"intValue\":\"${sequence}\"}}],\"traceId\":\"${trace_id}\",\"spanId\":\"${server_span_id}\"}]}]}]}"
+  send_payload v1/logs "{\"resourceLogs\":[{\"resource\":{\"attributes\":${resource_attributes}},\"scopeLogs\":[{\"scope\":{\"name\":\"synthetic-traffic-generator\",\"version\":\"1.0.0\"},\"logRecords\":[{\"timeUnixNano\":\"${now_ns}\",\"observedTimeUnixNano\":\"${now_ns}\",\"severityNumber\":${severity_number},\"severityText\":\"${severity_text}\",\"body\":{\"stringValue\":\"Synthetic order request ${sequence} completed with status ${status_code} in ${latency_ms}ms\"},\"attributes\":[{\"key\":\"event.name\",\"value\":{\"stringValue\":\"demo.order.completed\"}},{\"key\":\"http.response.status_code\",\"value\":{\"intValue\":\"${status_code}\"}},{\"key\":\"demo.sequence\",\"value\":{\"intValue\":\"${sequence}\"}}],\"traceId\":\"${trace_id}\",\"spanId\":\"${server_span_id}\"}]}]}]}"
 
   if [ $((sequence % 30)) -eq 0 ] || [ "${sequence}" -eq "${iterations}" ]; then
     printf 'Generated %s/%s telemetry batches\n' "${sequence}" "${iterations}"
@@ -152,6 +152,12 @@ kubectl create job "${OTEL_TRAFFIC_JOB_NAME}" \
   "${OTEL_TRAFFIC_INTERVAL}" \
   "${OTEL_TRAFFIC_SERVICE_NAME}" \
   "${OTEL_TRAFFIC_ENDPOINT}" >/dev/null
+
+kubectl patch job "${OTEL_TRAFFIC_JOB_NAME}" \
+  --context "${KUBE_CONTEXT}" \
+  --namespace "${OBSERVABILITY_NAMESPACE}" \
+  --type merge \
+  --patch '{"spec":{"backoffLimit":0}}' >/dev/null
 
 kubectl label job "${OTEL_TRAFFIC_JOB_NAME}" \
   --context "${KUBE_CONTEXT}" \
